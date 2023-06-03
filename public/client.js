@@ -34,12 +34,18 @@ const rowsData = [
   { id: 30, name: 'Essbare Blüten', lastWatered: 1 ,giessen:'Täglich'},
   // Add more rows here
 ];
+ 
+ 
+ 
+ 
 
 // Render the rows and their status icons
+var x = 0 ;
 function renderRows() {
   rowsContainer.innerHTML = '';
 
   rowsData.forEach(row => {
+    x++;
     const rowDiv = document.createElement('div');
     rowDiv.classList.add('row');
 
@@ -55,9 +61,10 @@ function renderRows() {
     const note = document.createElement('span');
     note.textContent = row.giessen;
     rowDiv.appendChild(note); 
-
+  
     const waterButton = document.createElement('button');
     waterButton.textContent = 'Water';
+    waterButton.id = x;
     waterButton.addEventListener('click', () => {
       waterRow(row);
 
@@ -87,9 +94,24 @@ function setStatusIcon(iconElement, daysSinceWatered) {
 
 // Handle watering of a row
 function waterRow(row) {
-  row.lastWatered = 0;
-  renderRows();
+  const vegetableId = row.id;
+  fetch(`/water-vegetable/${vegetableId}`, { method: 'POST' })
+    .then(response => {
+      if (response.ok) {
+        // Vegetable watered successfully, update the client-side data and UI
+        row.lastWatered = 0;
+        renderRows();
+      } else {
+        console.error('Error watering vegetable:', response.statusText);
+        // Handle error case here
+      }
+    })
+    .catch(error => {
+      console.error('Error watering vegetable:', error);
+      // Handle error case here
+    });
 }
+
 
 // Initial rendering of rows
 renderRows();
